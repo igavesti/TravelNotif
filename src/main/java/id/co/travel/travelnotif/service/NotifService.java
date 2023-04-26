@@ -1,5 +1,7 @@
 package id.co.travel.travelnotif.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import id.co.travel.travelnotif.model.Notif;
 import id.co.travel.travelnotif.repository.dao.NotifHistoryRepository;
 import id.co.travel.travelnotif.repository.model.NotifHistory;
 import org.slf4j.Logger;
@@ -13,21 +15,33 @@ public class NotifService implements INotifService {
 
     @Autowired
     private NotifHistoryRepository notifHistoryRepository;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
-    public String sendNotif() {
+    public String sendNotif(String input) throws Exception {
         LOGGER.info("Send Notif");
-        sendNotifEmail();
+
+        //**1. mapping input
+        Notif notif = objectMapper.readValue(input, Notif.class);
+
+        //**2. Send notif email
+        sendNotifEmail(notif);
+
+        //**3. Write Historical email
         NotifHistory notifHistory = new NotifHistory();
-        notifHistory.setTitle("Title");
-        notifHistory.setDescription("Description");
-        notifHistory.setBody("Body");
-        notifHistory.setEmail("Email");
+        notifHistory.setTitle(notif.getTitle());
+        notifHistory.setDescription(notif.getDescription());
+        notifHistory.setBody(notif.getBody());
+        notifHistory.setEmail(notif.getEmail());
         notifHistoryRepository.save(notifHistory);
+        LOGGER.info("Success");
+
+        //**4. Return Output
         return "Success";
     }
 
-    private void sendNotifEmail(){
+    private void sendNotifEmail(Notif notif) {
         //Dummy send notif via email
         //success
     }
